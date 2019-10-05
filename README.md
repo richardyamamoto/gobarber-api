@@ -99,3 +99,64 @@ Now make the changes to `import` and `export`. Check [app.js](app.js), [routes.j
   - [nodemon.js](nodemon.json)
 - And create a new script to be easier to start the nodemon 
   - [package.json](package.json)
+
+## Docker
+
+### Docker concept
+
+[Docker](Docker-concept.pdf)
+
+- Creating isolated ambience(container)
+  - Are ambiences that will not interfere on the behavior of other technologies and other tools of our server.
+- If we install the PosgreSQL as default it will change a bunch of files on our system. To prevent this problems we use Docker.
+
+**Image**
+- A service or technologies that we can put inside the container as:
+  - PostgreSQL, MySQL, MongoDB, Redis.
+
+**Container**
+- Intance of one Image
+- We can have 3 images running at the same container.
+
+**Docker Registry (DockerHub)**
+- A place that we can put our own images
+
+**Dockerfile**
+- The recipe to build an image.
+___
+### Docker configuration
+
+[Installation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/)
+
+- After installed to run create the Postgres image
+  - `docker run --name <database-name> -e POSTGRES_PASSWORD=<database_password> -p 5432:5432 -d postgres`
+
+> Flag `-p` will redirect the port, `machinePort:containerPort`
+___
+
+### Basic Command list
+
+Stop container
+```bash
+docker stop <container_name>
+```
+___
+Start container
+```bash
+docker start <container_name>
+```
+___
+List container running
+```bash
+docker ps
+```
+___
+List all containers at the machine
+```bash
+docker ps -a
+```
+___
+### Postbird
+Is a Graphic Interface to preview the database. [Installation](https://electronjs.org/apps/postbird)
+
+- After connecting, create a database specific to the application.
