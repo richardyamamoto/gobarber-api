@@ -78,3 +78,24 @@ routes.get('/', (req, res) => {
 ```
 - Now on the Browser put _https://localhost:3333_
 ___
+
+## Nodemon and Sucrase
+
+**Nodemon** is a utility that will monitor for any changes in your source and automatically restart your server. Perfect for development. Install it using
+
+**Sucrase** is an alternative to Babel, it allow us to use the new syntax of JavaScript as: `import` and `export`.
+
+- Install Nodemon and Sucrase by running
+  - `yarn add nodemon -D`
+  - `yarn add sucrase -D`
+
+> Flag `-D` for development dependency.
+
+Now make the changes to `import` and `export`. Check [app.js](app.js), [routes.js](routes.js), [server.js](server.js) to understand the changes. 
+
+- Now if you try to run `node src/server.js` it will not work because the new syntax is not supported.
+- Now you have to run `sucrase-node src/server.js`.
+- We installed de Nodemon to reset automatically so we have to configure it first.
+  - [nodemon.js](nodemon.json)
+- And create a new script to be easier to start the nodemon 
+  - [package.json](package.json)
