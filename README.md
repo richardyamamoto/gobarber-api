@@ -59,7 +59,7 @@ const app = require('./app');
 
 app.liste(3333);
 ```
-_We separate the application structure from the part that we create the server, but why?_ 
+_We separate the application structure from the part that we create the server, but why?_
 
 _**Because by doing that when we start the unitary test,functional tests and integration tests, the server won't need to be initialized on a port, the tests will run directly on the App class**_
 
@@ -91,13 +91,13 @@ ___
 
 > Flag `-D` for development dependency.
 
-Now make the changes to `import` and `export`. Check [app.js](app.js), [routes.js](routes.js), [server.js](server.js) to understand the changes. 
+Now make the changes to `import` and `export`. Check [app.js](app.js), [routes.js](routes.js), [server.js](server.js) to understand the changes.
 
 - Now if you try to run `node src/server.js` it will not work because the new syntax is not supported.
 - Now you have to run `sucrase-node src/server.js`.
 - We installed de Nodemon to reset automatically so we have to configure it first.
   - [nodemon.js](nodemon.json)
-- And create a new script to be easier to start the nodemon 
+- And create a new script to be easier to start the nodemon
   - [package.json](package.json)
 
 ## Docker
@@ -245,7 +245,7 @@ module.exports = {
         unique: true,
         type: Sequelize.STRING
       }
-    })  
+    })
   },
 
 down: (queryInterface, Sequelize) => {
@@ -269,7 +269,7 @@ Population of data for development and never going to be used in production envi
 
 ### MVC Architecture
 
-- Model: It keeps the abstractions of the database. Used to manipulate the data and don't have the responsibility by the rules of our application. 
+- Model: It keeps the abstractions of the database. Used to manipulate the data and don't have the responsibility by the rules of our application.
 
 - Controller: It's the entry point of requisitions. Routes generally will be directly associated with a controller method.
 
@@ -284,8 +284,46 @@ When we create another Controller?
 > Entity is not the same thing as Model. One Model can have more than one entity.
 - Controller must have 5 methods or less, never more than 5.
   - `index` : Listing users
-  - `show` : 
+  - `show` :
   - `store` : Exhibit one user
   - `update` : Update user data
   - `delete` : Delete user
 ___
+
+## Eslint and Prettier
+
+- Installation:
+  - `yarn add eslint -D`
+  - `yarn add prettier eslint-config-prettier eslint-plugin-prettier -D`
+- After installation run `yarn eslint --init`
+- Paste the configurations [.eslintrc.js](.eslintrc.js)
+- Create [.prettierrc](.prettierrc)
+- Create [.editorconfig](.editorconfig)
+
+>Automatic fix `yarn eslint --fix <folder_name> --ext <extension>`
+___
+
+## Sequelize configuration
+
+Create the structure:
+
+- `src`
+  - `config`
+    - `database.js`
+  - `database`
+    - `migrations`
+  - `app`
+    - `controllers`
+    - `models`
+
+Install dependency of sequelize
+  - `yarn add sequlize`
+  - `yarn add sequelize-cli -D`
+
+Create [.sequelizerc](.sequelizerc)
+  - This file will resolve the path to our Models, Migrations and Seeds.
+
+Now on `src/config/`[database.js](database.js)
+- Paste this configurations of database
+- For PostgreSQL we need to add
+  - `yarn add pg@^7.0.0 pg-hstore`
