@@ -160,3 +160,132 @@ ___
 Is a Graphic Interface to preview the database. [Installation](https://electronjs.org/apps/postbird)
 
 - After connecting, create a database specific to the application.
+___
+## Sequelize
+[Documentation](https://sequelize.org/)
+
+Sequelize is a promise-based Node.js ORM for Postgres, MySQL, MariaDB, SQLite and Microsoft SQL Server.
+
+Abstraction of database language, instead of using SQL we are going to use only JavaScript. Tables become Models
+
+### Manipulating data
+
+Using SQL
+
+```sql
+INSERT INTO users (name, email)
+  VALUE (
+    'Richard Yamamoto',
+    'rybolteri@gmail.com'
+  )
+```
+
+Now using Sequlize
+
+```js
+User.create({
+  name: 'Richard Yamamoto',
+  email: 'rybolteri@gmail.com'
+})
+```
+
+Sequelize "translate" the SQL language to JavaScript.
+
+>_User is our Model of user. Then we are going to import the User from `User.js`_
+
+Another example is a query to search for an user
+
+Using SQL
+
+```sql
+SELECT *
+FROM users
+WHERE email = 'rybolteri@gmail.com'
+LIMIT 1
+```
+
+Using Sequelize will looks like
+
+```js
+User.findOne({
+  where: {
+    email: 'rybolteri@gmail.com'
+  }
+})
+```
+
+This syntax works fine with other Database
+
+### Migrations
+
+Is a version control for base of database for development and production environment.
+
+Each migration file content instructions for creation, alterations or removal of table or columns.
+
+Each migration happens by date. If we create a migration now, it can not depend of a unexistent migration.
+
+Migration exemple
+
+```js
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable('users', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
+      },
+      name: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      email: {
+        allowNull: false,
+        unique: true,
+        type: Sequelize.STRING
+      }
+    })  
+  },
+
+down: (queryInterface, Sequelize) => {
+  return queryInterface.dropTable('users')
+}
+```
+
+Methods:
+
+- `up` : When executing the migration.
+
+- `down`: Intruction to rollback and delete the table, in case of something goes wrong.
+
+**When the migration leaves the machine and goes to another developer or production environment, we can't edit it, we have to create another migration with the changes**
+
+Each migration changes only one table.
+
+### Seeds
+
+Population of data for development and never going to be used in production environment. If we need the table with some default data, it must be add with migration.
+
+### MVC Architecture
+
+- Model: It keeps the abstractions of the database. Used to manipulate the data and don't have the responsibility by the rules of our application. 
+
+- Controller: It's the entry point of requisitions. Routes generally will be directly associated with a controller method.
+
+- View: Is the return for the client.
+
+>Controller going to be a class it will return a JSON and never call another controller.
+
+When we create another Controller?
+
+- When we have a new entity of the application
+
+> Entity is not the same thing as Model. One Model can have more than one entity.
+- Controller must have 5 methods or less, never more than 5.
+  - `index` : Listing users
+  - `show` : 
+  - `store` : Exhibit one user
+  - `update` : Update user data
+  - `delete` : Delete user
+___
