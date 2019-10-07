@@ -347,10 +347,28 @@ yarn sequelize db:migrate
 ```bash
 yarn sequelize db:migrate:undo
 ```
-- Or if you wanto to undo all the migrations
+- Or if you want to undo all the migrations
 >Becareful because this command will delete the data from the tables.
 ```bash
 yarn sequelize db:migrate:undo:all
 ```
 - Inside Postbird we have the Sequelize Meta that is a registry of migrations. It contents all the migrations that was executed.
+___
+
+## User Model
+
+Inside `src/app/models` create `User.js`.
+
+- Inside `User.js` import
+  - `import { Model } from 'sequelize';`.
+- Then create `User` class inheriting from `Model`.
+- Inside the class there is a `static init()` method that will initialize the `super init()` method.
+- Inside this `super.init()`, will be placed an object with our table columns.
+>_We can ignore the primary key, Foreign keys, created_at and updated_at_.
+- We put only the columns that will be filled by the user.
+- To put the type of the field we must import Sequelize
+  - `import Sequelize, {...} from 'sequelize';`
+- The first parameter of the `super.init()` is the object of the user table.
+- The second parameter waits for and object with `sequelize` and could be filled with other configurations.
+- For further details -> [User.js](src/app/models/User.js)
 ___
