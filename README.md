@@ -372,3 +372,56 @@ Inside `src/app/models` create `User.js`.
 - The second parameter waits for and object with `sequelize` and could be filled with other configurations.
 - For further details -> [User.js](src/app/models/User.js)
 ___
+
+## Model Loader
+
+We are going to create the file that will make the connection with Postgres database and load models for all the application.
+
+- Create at `src/database` the `index.js`
+- Import the Sequelize that will make this connection
+  - `import Sequelize from 'sequelize';`
+- Create `class Database {}`
+- Inside `Database{}` we'll have the `constructor() {}` and `init() {}`
+- The `constructor` will receive `this.init();`
+- And `init` will receive a parameter `this.connection` that will be an intance of `Sequelize`
+  - Import the database configuration
+    - `import databaseConfig from '../config/database'`.
+- The attribute `connection` will connect with our database.
+```js
+class Database {
+  constructor() {
+    this.init();
+  }
+  init(){
+    this.connection = new Sequelize(databaseConfig)
+  }
+}
+```
+- Then import the User model
+  - `import User from '../app/models/User'`
+- Create a constant to receive an array of models.
+  - `const models = [User,...]`
+- Inside `init() {}` map the models array
+  - Each Model has an static init method that waits for the connection
+```js
+models.map(model => model.init(this.connection));
+```
+- At **app.js** import the database
+  - `import ./database`
+    - It will recognize the index.js
+- To test, at `routes.js`
+  - `import User from './app/models/User'`
+- Then create the user
+
+```js
+routes.get('/', async (req, res) => {
+  const user = await User.create({
+    name: 'Richard Yamamoto',
+    email: 'rybolteri@gmail.com',
+    password_hash: '123456',
+  });
+  return res.json(user);
+})
+```
+>_By accessing the `https://localhost:3333/` the user must be seen with all the field filled. And if you check in Postbird,the new user must be there too._
+___
