@@ -428,7 +428,7 @@ ___
 
 ## User Registration
 
-- First at `src/app/controllers` create the `UserController.js`
+- First at `src/app/controllers` create the [UserController.js](src/app/controllers/UserController.js)
 - It is basically a class.
 - Import the User model
 
@@ -473,4 +473,31 @@ if(userExists){
 >-  `where:{}` is analog to a filter
 - The search will result an user that has the email equals of the requisition body email and return an error (400: Bad request)
 - If nothing was found, the user is created.
+___
+
+## Generating Password Hash
+
+To generate the hash we are going to use the Bcrypt
+
+- Install
+  - `yarn add bcryptjs`
+- At `src/app/models/`[User.js](src/app/models/User.js)
+- Import bcrypt
+  - `import bcrypt from 'bcryptjs'`
+- Below the closure of `super.init()`
+- Create `this.addHook()`
+  - `addHook()` is a functionality of Sequelize which is basically code snippets that are executed automatically based on actions that happens on the Model.
+    - Exemple: `addHook('beforeSave', () => {})` - will execute the function (second parameter) before data been saved on database.
+      - The function waits for the created model as parameter
+- Ok, now the user will fill the password field and the hook will generate the hash.
+- Bcrypt has a method `hash(<attribute>, <cryptography_strengh:integer>)`
+```js
+this.addHook('beforeSave', async (user) => {
+  if(user.password){
+    user.password_hash = await bcrypt.hash(user.password, 8);
+  }
+})
+return this;
+```
+>DO NOT FORGET!!! -> **`return this`**
 ___
