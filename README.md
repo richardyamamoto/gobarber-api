@@ -323,7 +323,14 @@ Install dependency of sequelize
 Create [.sequelizerc](.sequelizerc)
   - This file will resolve the path to our Models, Migrations and Seeds.
 
-Now on `src/config/`[database.js](database.js)
+Now on `src/config/`[database.js](src/config/database.js)
 - Paste this configurations of database
 - For PostgreSQL we need to add
   - `yarn add pg@^7.0.0 pg-hstore`
+___
+
+## User Migration
+
+We will create our User migration using the `sequelize-cli` and it will turn things a lot easier.
+
+First run `yarn sequelize migration:create --name=create-users`
