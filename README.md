@@ -501,3 +501,17 @@ return this;
 ```
 >DO NOT FORGET!!! -> **`return this`**
 ___
+
+## Concept of JWT (JSON Web Token)
+
+We are going to use JWT to generate session tokens and provide permission to user in session.
+
+The Token is separated in 3 parts
+
+1. <span style="color: orange">Header</span> - Contents which kind of token we generate.
+2. <span style="color: red">Payload</span> - It carries some extra informations that could be useful for backend or frontend (non-sensitive data) _Exemple: id_
+3. <span style="color: cyan">Signature</span> - The prove that token was not modified.
+
+Token exemple:
+<span style="color: orange">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span >.<span style="color: red">eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ</span>.<span style="color: cyan">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
+___
