@@ -284,8 +284,8 @@ When we create another Controller?
 > Entity is not the same thing as Model. One Model can have more than one entity.
 - Controller must have 5 methods or less, never more than 5.
   - `index` : Listing users
-  - `show` :
-  - `store` : Exhibit one user
+  - `show` : Exhibit one user
+  - `store` : Save user data
   - `update` : Update user data
   - `delete` : Delete user
 ___
@@ -334,3 +334,23 @@ ___
 We will create our User migration using the `sequelize-cli` and it will turn things a lot easier.
 
 First run `yarn sequelize migration:create --name=create-users`
+
+Now we have to put the column of our migration (table)
+
+For more details -> [User Migration](src/database/migrations/20191006222131-create-users.js).
+
+- To execute the migration run
+```bash
+yarn sequelize db:migrate
+```
+- In case of mistakes, to rollback the last migration
+```bash
+yarn sequelize db:migrate:undo
+```
+- Or if you wanto to undo all the migrations
+>Becareful because this command will delete the data from the tables.
+```bash
+yarn sequelize db:migrate:undo:all
+```
+- Inside Postbird we have the Sequelize Meta that is a registry of migrations. It contents all the migrations that was executed.
+___
