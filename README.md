@@ -423,5 +423,54 @@ routes.get('/', async (req, res) => {
   return res.json(user);
 })
 ```
->_By accessing the `https://localhost:3333/` the user must be seen with all the field filled. And if you check in Postbird,the new user must be there too._
+>_By accessing the `https://localhost:3333/` the user must be seen with all the fields filled. And if you check in Postbird,the new user must be there too._
+___
+
+## User Registration
+
+- First at `src/app/controllers` create the `UserController.js`
+- It is basically a class.
+- Import the User model
+
+Basic form of a controller:
+```js
+import User from '../models/User'
+
+class UserController() {
+  async store (req, res) {
+
+    return res.json({});
+  }
+}
+
+export default new UserController();
+```
+- To create an user we will use the User model
+- All models has the method `create()` and it waits for the requisition.
+  - For us requisiton = JSON body.
+
+- Inside the method `store(){}`
+```js
+async store (req, res){
+  const user = await User.create(req.body);
+  return res.json(user);
+}
+```
+- In this case we have to verify if the user already exists.
+- We can treat this flux with one `if`
+```js
+const { email } = req.body;
+const userExists = await User.findOne({
+  where: {
+    email,
+  }
+})
+if(userExists){
+  return res.status(400).json({error: 'User already exists'});
+}
+```
+>-   `.findOne()` search for only one result
+>-  `where:{}` is analog to a filter
+- The search will result an user that has the email equals of the requisition body email and return an error (400: Bad request)
+- If nothing was found, the user is created.
 ___
