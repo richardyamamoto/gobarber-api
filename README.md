@@ -619,3 +619,40 @@ export default async (req, res, next) => {
 
 By extracting the user id from the token, we can make alterations without pass the ID by query parameters.
 ___
+
+## User Update
+
+- Inside `src/app/controllers/`[UserController.js](src/app/controllers/UserController.js)
+- At `async update() {}`
+- Create a const to receive the user id from request
+- Than declare another const to receive the user found by primary key (PK)
+- We need to certify if the user change de email, this email must be unique.
+- And check the password too.
+- The file should looks like:
+```js
+async update(req, res) {
+  const { userId } = req;
+  const { email, oldPassword } = req.body;
+  const user = await User.findByPk(userId);
+
+  if (email !== user.email) {
+    const userExists = await User.findOne({ where: { email } });
+
+    if (userExists) {
+      return res.status(401).json({ error: 'Email already taken' });
+    }
+  }
+
+  if (oldPassword && !(await user.checkPassword(oldPassword))) {
+    return res.status(401).json({ error: 'Password does not match' });
+  }
+
+  const { id, name, provider } = await user.update(req.body);
+  return res.json({
+    id,
+    name,
+    email,
+    provider,
+  });
+}
+```
