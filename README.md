@@ -656,3 +656,42 @@ async update(req, res) {
   });
 }
 ```
+___
+
+## Validating Input Data
+
+To validate input data, we will use the Yup that works with schema validation
+- `yarn add yup`
+- At `src/app/controller/`[UserController.js](src/app/controller/UserController.js)
+- Import Yup
+  - `import * as Yup from 'yup'`
+- Declare a constant to receive the schema
+```js
+const schema = Yup.object().shape({
+  name: Yup.string().required(),
+  email: Yup.string().email()required(),
+  password: Yup.string().min(6).required(),
+})
+```
+- After that we are going to validade the Update
+- At `async update() {}`
+- We are going put some rules for password
+```js
+const schema = Yup.object().shape({
+  name: Yup.string(),
+  email: Yup.string().email(),
+  oldPassword: Yup.string().min(6),
+  password: Yup.string().when('oldPassword', (oldPassword, field) =>
+    oldPassword ? field.required() : field
+  ),
+  confirmPassword: Yup.string()
+    .min(6)
+    .when('password', (password, field) =>
+      password ? field.required().oneOf([Yup.ref('password')]) : field
+    ),
+});
+```
+Explanation of `.when()`
+```js
+.when(String:field_name, Function(field_name, field) => Options:boolean ? true : false)
+```
