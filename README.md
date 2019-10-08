@@ -695,3 +695,57 @@ Explanation of `.when()`
 ```js
 .when(String:field_name, Function(field_name, field) => Options:boolean ? true : false)
 ```
+___
+
+## File Upload
+
+We are going to use Multer to upload files in `multipart/form-data`
+
+- Create
+- `src`
+  - `temp`
+    - `uploads`
+
+- Then
+
+- `src`
+  - `config`
+    - [multer.js](src/config/multer.js)
+
+- Now inside `multer.js`
+- Import
+  - `import multer from 'multer'`
+  - `import crypto from 'crypto'`
+  - `import { extname, resolve } from 'path'`
+
+- Export default the object configuration
+- Create attribute `store` that receives `multer.diskStorage({})`
+- The first attribute of `diskStorage()` is the `destination` and second `filename`
+```js
+destination: resolve(__dirname, '..', '..', 'temp', 'uploads')
+```
+```js
+filename: (req, file, cb) => {
+  crypto.randomBytes(16, (err, res) => {
+    if (err) return cb(err);
+
+    return cb(null, res.toString('hex') + extname(file.originalname));
+  });
+},
+```
+- At `routes.js`
+- Import
+  - `import multer from 'multer'`
+  - `import multerConfig from './config/multer'`
+- Create
+`const upload = multer(multerConfig);`
+The middleware
+- Create a route to upload file
+  - Just for test
+```js
+routes.post('/file', upload.single('file'), (req, res) => {
+  return res.json({message: 'ok'})
+})
+```
+- Look at the temp folder the uploaded file.
+___
