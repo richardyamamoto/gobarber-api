@@ -562,3 +562,60 @@ return res.json({
   - `import authConfig from '../../config/auth'`
 - And place the authConfig.secret and authConfig.expiresIn in the correct place.
 ___
+
+## Authentication Middleware
+
+We only will allow the user to update data if he is on a session
+
+- First at `src/app/controllers/`[UserController.js](src/app/controllers/UserController.js)
+- Create the method `async update() {}`
+- Then on `src/`[routes.js](src/routes.js)
+  - `routes.put('/users', UserController.update)`
+
+We will have to intercept the route to verify if the user are in session, to make this we use `middlewares`
+- At `src/app/`[middlewares](src/app/middlewares)`/`[auth.js](src/app/middlewares/auth.js)
+
+>_The token that was provided by our session, is going to be passed to our auth middleware by the header of the requisition_
+- Now export default the middleware
+- Create a constant to receive the request header authorization.
+  - Where our Bearer token was placed.
+- Then using unstructuring we can extract only the token inside the array
+```js
+const authHeader = req.headers.authorization;
+const [, token] = authHeader.split(' ');
+```
+- Now import the JWT and the authConfig
+  - `import jwt from 'jsonwebtoken'`
+  - `import authConfig from '../../config/auth'` - where is our secret
+- We will use the `try catch` to handle the token verification.
+- To verify, JWT has the method `verify()`, but it has two versions, the syncronous and asyncronous, although the asyncronous version uses the callback function style.
+- We are going to solve this problem by using `promisify` from `util`, it transforms callback functions into async await functions.
+  - `import { promosify } from 'util'`
+- After decoded the token, the payload carries the user id, so we are going to mutate the requesition and input the userId.
+```js
+import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
+import authConfig from '../../config/auth';
+
+export default async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({error: 'Token not provided'});
+  }
+
+  const [, token] = authHeader.split(' ');
+
+  try {
+    const decoded = await promisify(jwt.verify)(token, authConfig.secret);
+    req.userId = decoded.id;
+
+    return next();
+  }catch(error) {
+    return res.status(401).json({error:'Invalid token'})
+  }
+}
+```
+>_`promisify()`: transforms functions into async/await functions. The return is another function which waits for the parameters of the original function._
+
+By extracting the user id from the token, we can make alterations without pass the ID by query parameters.
+___
