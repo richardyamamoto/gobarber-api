@@ -515,3 +515,50 @@ The Token is separated in 3 parts
 Token exemple:
 <span style="color: orange">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span >.<span style="color: red">eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ</span>.<span style="color: cyan">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
 ___
+
+## JWT Authentication
+
+- Install JSON Web Token
+  - `yarn add jsonwebtoken`
+- Then create `src/app/controllers/`[SessionController.js](src/app/controllers/SessionController.js)
+- `import jwt from 'jsonwebtoken'`
+- `import User from '../models/User'`
+- Create the class SessionControler with the method asyncronous store
+- Then verify if the user email exists
+- Check if password matchs
+  - We are going to create a new method inside our user Model, because this verification is basically an user rule.
+- On `src/app/models/`[User.js](src/app/models/User.js)
+- Create the method `checkPassword(password){}`
+```js
+checkPassword(password){
+  return bcrypt.compare(password, this.password_hash);
+}
+```
+- Now back to [SessionController.js](src/app/controllers/SessionController.js)
+- Verify if the password from request body matches with password hash
+```js
+if(! (await user.checkPassoword(password))){
+  return res.status(401).json({error: 'Passoword does not match'})
+}
+```
+>_If the password does not match with password hash will return this error_
+
+- Create the session
+```js
+const {id, name, email} = user;
+return res.json({
+  user:{
+    id,
+    name,
+    email,
+  },
+  token: jwt.sign({id}, '25de0fdcb8a263d895d0fc5dac2c1e25', {
+    expiresIn: '7d',
+  })
+})
+```
+- Organize better, create at `src/config/`[auth.js](src/config/auth.js)
+- Then import it
+  - `import authConfig from '../../config/auth'`
+- And place the authConfig.secret and authConfig.expiresIn in the correct place.
+___
