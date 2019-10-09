@@ -739,7 +739,7 @@ filename: (req, file, cb) => {
   - `import multerConfig from './config/multer'`
 - Create
 `const upload = multer(multerConfig);`
-The middleware
+  - The middleware
 - Create a route to upload file
   - Just for test
 ```js
@@ -748,4 +748,82 @@ routes.post('/file', upload.single('file'), (req, res) => {
 })
 ```
 - Look at the temp folder the uploaded file.
+___
+
+## User Avatar
+
+When Multer act on the route, it release an attribute -> `req.file`
+> It happens on single file, if exists more than one it would be `req.files`
+
+- Create `src/app/controllers/`[FileController.js](src/app/controllers/FileControllers.js)
+- Then on `routes.js` import the FileController.js
+  - `import FileController from '../app/controllers/FileController'`
+- We must create a new table for files
+  - `yarn sequelize migration:create --name=create-files`
+- We need: `id`, `name`, `path`, `created_at`, `updated_at`
+- Run the database table `yarn sequelize db:migrate`
+- Now create the model of [File.js](src/app/models/File.js)
+- On `src/database/index.js`, import the File model and put it on the array.
+
+- On `FileController.js` import the File model
+- Then unstructure the `req.file` to recover some data.
+  - We need `originalname` and `filename`.
+> To rename some attributes we can use `const { Attribute: NewName }`
+
+```js
+async store(req, res) {
+  const { originalname: name, filename: path } = req.file;
+
+  const file = await File.create({
+    name,
+    path,
+  })
+
+  return res.json(file)
+}
+```
+The way we run our migrations, the file table does not have a connection with each other. Now to solve this problem create a new migration to add the table column.
+
+- `yarn sequelize migration:create --name=add-avatar-field-to-users`
+- This migrations is a little bit different.
+- Instead of:
+```js
+return queryInterface.createTable({
+  ...
+})
+```
+- We will replace the default return for:
+```js
+return queryInterface.addColumn()
+```
+- The `addColumn()`:
+
+- 1. First parameter is which table to add the column: String,
+- 2. The name of the new columm: String,
+- 3. Information: Object,
+    - 3.1. Type,
+    - 3.2. References (foreign key): Object
+      - First attribute the table reference `model: 'table_name'`
+      - Second attribute the reference `key: column_name`
+    - 3.3. onUpdate
+    - 3.4. onDelete
+>All the `avatar_id` on users table will be an `id` on files table
+- `yarn sequelize db:migrate`
+- This way the avatar id will not appear at the user table.
+- We have to create a relation with User model and File model.
+- At `src/app/models/User.js`
+- Create a static method `associate()`
+```js
+static associate(models){
+  this.belongsTo(models.File, {
+    foreignKey: 'avatar_id',
+  })
+}
+```
+- Then on `src/database/index.js`
+- Put another `map()` with:
+```js
+.map(model => model.associate && model.associate(this.connection.models))
+```
+- Now put on the `req.body` JSON the `"avatar_id": 1`, it will appear at the user table.
 ___
