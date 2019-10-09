@@ -882,3 +882,18 @@ this.server.use('files', express.static(resolve(__dirname, '..', 'temp', 'upload
 ```
 ___
 
+## Migration and Model of Appointments
+
+Create a new migration for Appointments
+- `yarn sequelize migration:create --name=create-appointments`
+- Check the changes [create-appointments.js](src/database/migrations/20191009195657-create-appointments.js)
+- Then `yarn db:migrate`
+- Create an Appointment model -> [Appointment.js](src/app/models/Appointment.js)
+- The model must have the association with User model
+- To practice this again:
+```js
+static associate(models) {
+  this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+  this.belongsTo(models.User, { foreignKey: 'provider_id', as: 'provider' });
+}
+```
