@@ -827,3 +827,58 @@ static associate(models){
 ```
 - Now put on the `req.body` JSON the `"avatar_id": 1`, it will appear at the user table.
 ___
+
+## Provider Listing
+
+- On `routes.js` create a new router and a new controller.
+```js
+routes.get('/providers', ProviderController.js)
+```
+- `src/app/controllers/`[ProviderController.js](src/app/controllers/ProvierController.js)
+- At the controller create the method `async index()` to list the providers
+- Import the User model and File model
+  - `import User from '../models/User'`
+  - `import File from '../models/File'`
+- Use the findAll and where to find only providers
+- The property `attributes` return only selected attributes
+- Property `includes` is an array that can receive information of another models
+- Each object can have a model and nickname
+  - To change the nickname from model, go to [User.js](src/app/models/User.js).
+  - On method `associate()` after the foreignKey, put `as: 'avatar'` that is the nickname.
+  - Then at the controller, put `as: 'avatar'` below `model: File`.
+```js
+async index(req, res) {
+  const provier = await User.findAll({
+    where: {provider: true},
+    attributes: ['id', 'name', 'email', 'avatar_id'],
+    includes:[
+      {
+        model: File,
+        as: 'avatar',
+        attributes: ['name','path']
+      },
+    ]
+  });
+  return res.json(provider);
+}
+```
+- Until now we don't have an Url to show the picture, it's a good practice to include it.
+- On [File.js](src/app/models/File.js).
+- Insert another field
+  - Type virtual
+  - Method `get() {}`
+- The method `get()` allow to insert some functionalities
+```js
+get() {
+  return `http://localhost:3333/files${this.path}`
+}
+```
+- To show static media, Express has the method `static`
+- At [app.js](src/app.js)
+- Import `resolve` from path
+- On `middlewares() {}` put
+```js
+this.server.use('files', express.static(resolve(__dirname, '..', 'temp', 'uploads')))
+```
+___
+
