@@ -989,3 +989,33 @@ if(checkAvailability) {
 ```
 - If it returns true, it means that the date is not available.
 ___
+
+## Listing User Appointments
+
+- Create `async index(req, res) {}`
+- A constant will receive the appointments
+- We need to include the provider attributes from model User
+- And include the file attributes from the File model
+```js
+const appointments = await Appointments.findAll({ where: {
+  user_id: req.userId,
+  canceled_at: null,
+  order: ['date'],
+  attributes: ['id', 'name'],
+  include: [
+    {
+      model: User,
+      as: 'provider'
+      attributes: ['id', 'name'],
+      include: [
+        {
+          model: File,
+          as: 'avatar'
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    }
+  ]
+}})
+```
+___
