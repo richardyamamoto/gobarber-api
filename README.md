@@ -889,11 +889,52 @@ Create a new migration for Appointments
 - Check the changes [create-appointments.js](src/database/migrations/20191009195657-create-appointments.js)
 - Then `yarn db:migrate`
 - Create an Appointment model -> [Appointment.js](src/app/models/Appointment.js)
-- The model must have the association with User model
+- The Appointment model must have the association with User model
 - To practice this again:
 ```js
 static associate(models) {
   this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
   this.belongsTo(models.User, { foreignKey: 'provider_id', as: 'provider' });
 }
+```
+___
+
+## Service Scheduling
+
+- Create the AppointmentController.js at `src/app/controllers`
+- Create the method `async post() {}`
+- We need to certify that the user is not a provider
+- First import User model
+  `import User from '../models/User'`
+- Use Yup to validate data by declaring the schema
+```js
+const schema = Yup.object().shape({
+      provider_id: Yup.number().required(),
+      date: Yup.date().required(),
+    });
+```
+- Use unstructure to extract the provider id and data from requisition body
+```js
+const { provider_id, date } = req.body;
+```
+- Then create a constant to receive the result of the search
+```js
+const isProvider = await User.findOne({where: {
+  id: provider_id,
+  provider: true,
+}})
+```
+- Then if it is false, return an error
+```js
+if (isProvider) {
+  return res.status(401).json({error: 'Can only create appointments with providers'})
+}
+```
+- Then create the appointment
+```js
+const appointment = await Appointment.create({
+  user_id: req.userId,
+  provider_id,
+  date: date,
+})
 ```
