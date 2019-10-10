@@ -938,3 +938,54 @@ const appointment = await Appointment.create({
   date: date,
 })
 ```
+
+## Validating Scheduling
+
+We are going to use the `Date fns` to validate date.
+
+[Documentation](https://date-fns.org/docs/Getting-Started)
+
+Install running `yarn add date-fns@next`
+
+- The first validation is if the date that user wants to create the appointment has already not passed.
+- The second validation is if the provider has the date available to create appointments.
+- Will be allowed only one appointment per hour.
+
+**1st Verification - If date is not passed from current date.**
+
+- Import some functions of date-fns
+  - `import { startOfHour, parseISO } from 'date-fns'`
+    - `startOfHour()` - Will get the hour and replace minutes and seconds to 00
+    - `parseISO()` - Transform `YYYY-MM-DDTHH:MM:SS-GMT` into JavaScript date
+- After check if the user is provider
+- Create a constant to receive the hour of the appointment
+```js
+const hourStart = startOfHour(parseISO(date));
+```
+- Import the function `isBefore` from date-fns
+  - `import { startOfHour, parseISO, isBefore} from 'date-fns'`
+- Now compare the current date to the `hourStart`
+- If the `new Date()`(current date) if before the `hourStart` from the requesition body, it means that's not possible to create an appointment.
+```js
+if(isBefore(hourStart, new Date())) {
+  return res.status(400).json({error: 'Past dates are not allowed'})
+}
+```
+**2nd Verification - Date availablility**
+
+- Create a constant `checkAvailability`
+```js
+const checkAvailability = await Appointment.findOne({
+  where: {
+    provider_id,
+    canceled_at: null,
+    date: hourStart,
+  }
+})
+
+if(checkAvailability) {
+  return res.status(401).json({ error: 'Appointment date are not available' })
+}
+```
+- If it returns true, it means that the date is not available.
+___
