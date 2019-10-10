@@ -1018,4 +1018,31 @@ const appointments = await Appointments.findAll({ where: {
   ]
 }})
 ```
+- Do not forget to put the index method on routes
+
+`routes.get('/appointments', AppointmentController.index)`
+___
+
+## Applying Pagination
+
+We have the parameter query that is passed on the URL
+
+Exemple: `http://localhost:3333/appointments?page=1`
+
+This query can be recovered from `req.query`
+
+- Create a constant with unstructuring to receive the query parameter.
+```js
+const { page } = req.query;
+```
+- There is an attribute called `limit` that limits the number of objects to be shown.
+- There is another attribute called `offset` that jumps the number of objects.
+- Put this attributes after `attributes: []`.
+```js
+{
+  attributes: [],
+  limit: 20,
+  offset: (page - 1) * 20,
+}
+```
 ___
