@@ -1126,3 +1126,62 @@ mongo() {
 }
 ```
 >The method `connect()` waits as 1st parameter the url from database, in our case as we do not have user and password, it will directly the host then port then the name of the database. As 2nd parameter(optional), it waits for an configuration object, we will use the "new url format", "find and modify" and  "unified topology" as true.
+___
+
+## Notificating New Appointment
+
+Mongo use Schema instead of Models, so we'll have a folder for this. Schema free is the methodology used, it means that one registry can have the field title while another registry does not have.
+
+Use [MongoDB Compass](https://www.mongodb.com/download-center/compass) as Interface.
+
+- First at `src/app` create the folder `schemas`
+- Then create the [Notification.js](src/app/schemas/Notification.js)
+- Import the mongoose
+  - `import mongoose from 'mongoose'`
+- Create a constant to be an intance of mongoose schema
+```js
+const NotificationSchema = new mongoose.Schema({
+    content: {
+      type: String,
+      required: true,
+    },
+    user: {
+      type: Number,
+      required: true,
+    },
+    read: {
+      type: Boolean,
+      required: true,
+      default: false,
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+export default mongoose.model('Notification', NotificationSchema)
+```
+Now on [AppointmentController.js](src/app/controllers/AppointmentController.js), after create the appointment, we will send the notification to provider.
+
+- We will use the data from User model
+- Then use the method `format` from `date-fns` and the locale from `date-fns/locale/pt`
+```js
+import { format } from 'date-fns';
+import pt from 'date-fns/locale/pt'
+...
+const { name } = await User.findByPk(req.userId);
+const formattedDate = format(
+  hourStart,
+  "'dia 'dd' de 'MMMM', ás 'HH:mm'h'",
+  {locale: pt}
+)
+await Notification.create({
+  content: `Novo agendamento de ${name} para ${formattedDate}`,
+  user: provider_id,
+})
+```
+
+Now when the notification is created, we send to Mongo the data of the appointment for the provider.
+___
+
