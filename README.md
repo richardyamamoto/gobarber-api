@@ -1101,3 +1101,28 @@ return res.json(appointments)
 ```
 >The `Op.between` is passed through brackets because is the name of the key, and receive statements for comparison inside an array.
 ___
+
+## Setting MongoDB
+
+MongoDB is a non relational database, we are going to use them, because there are some data that does not have relation. This kind of database are really performatic.
+
+- First of all, we need to run a new docker container
+  - `docker run --name mongobarber -p 27017:27017 -d -t mongo`
+    - [Docker-MongoDB](https://hub.docker.com/_/mongo)
+  - At the browser put `http://localhost:27017`, it will show a message if the Mongo container is running.
+- To connect our application with MongoDB, we are going to use [Mongoose](https://mongoosejs.com/docs/index.html)
+- Install the Mongoose
+  - `yarn add mongoose`
+- Inside [database/index.js](src/database/index.js)
+- We'll import mongoose
+  - `import mongoose from 'mongoose'`
+- Create a new method `mongo() {}` and call it on `constructor()`
+```js
+mongo() {
+  this.mongoConnection = mongoose.connect(
+    'mongodb://localhost:27017/gobarber',
+    { useNewUrlParser: true, useFindAndModify: true, useUnifiedTopology: true }
+  )
+}
+```
+>The method `connect()` waits as 1st parameter the url from database, in our case as we do not have user and password, it will directly the host then port then the name of the database. As 2nd parameter(optional), it waits for an configuration object, we will use the "new url format", "find and modify" and  "unified topology" as true.
