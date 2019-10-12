@@ -1246,3 +1246,52 @@ return res.json(notification);
 >- 2nd parameter: Which attribute to change
 >- 3rd parameter: Options, in our case the `new` will return the changes so we can list this notification again.
 ___
+
+## Canceling Appointment
+
+The user will only be able to cancel the appointment at least 2 hours before. And we need to check if the user in session is the same of the user id of the appointment
+
+- First create a new route at `routes.js`
+  - `routes.delete('/appointments/:id', AppointmentController.delete)`
+- On [AppointmentController.js](src/app/controllers/AppointmentController.js).
+- Create a const to receive the Appointment data from model.
+- Extract the id from `req.params`.
+- Extract user_id from appointment data.
+- Check if the user_id from appointment is not the same as the req.userId from token.
+- Import the method do subtract hours.
+  - `import { subHours } from 'date-fns'`
+- Then declare a constant to receive the hour subtracted.
+- Check if the hour subtracted still in the 2 hours antecedence allowed.
+- Now mutate the attribute `canceled_at` with the current date.
+- Save changes and show the results on the `return res.json()`
+```js
+async delete(req, res) {
+  const { id } = req.params;
+
+  const appointment = await Appointment.findByPk(id);
+
+  const {user_id, date} = appointment;
+
+  if(user_id !== req.userId) {
+    return res.status(401).json( {error: 'Not allowed to cancel this appointment' })
+  }
+
+  const dateWithSub = subHours(date, 2);
+
+  if(isBefore(dateWithSub, new Date())) {
+    return res
+      .status(401)
+      .json({ error: 'Can only cancel with 2 hours of antecedence' })
+  }
+
+  appointment.canceled_at = new Date();
+
+  await appointment.save();
+
+  return res.json(appointment);
+}
+```
+>`subHours()`
+>- 1st Parameter: The date
+>- 2nd Parameter: Amount to subtract
+___
