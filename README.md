@@ -1046,3 +1046,58 @@ const { page } = req.query;
 }
 ```
 ___
+
+## Listing Provider Schedule
+
+The provider must have a unique list. So let's create a controller for it
+
+- Create `ScheduleCotroller.js` inside `src/app/controllers`
+- Create the route inside `routes.js`
+  - Import the `ScheduleController.js`
+```js
+router.get('/schedule', ScheduleController.index);
+```
+- Now on `ScheduleController.js` we will edit the index method.
+- Create a constant to receive the the verification of the user
+  - User must be a provider
+- Import the User model.
+  - `import User from '../models/User'`
+```js
+const isProvider = await User.findOne({ where: {
+  id: req.userId,
+  provider: true,
+}})
+
+if (!isProvider) {
+  return res.status(401).json({ error: 'User is not provider' })
+}
+```
+- After this verification we will pass the date of the search by query parameters
+  - Exemple: `http://localhost:3333/schedule?date=2019-10-12T00:00:00-03:00`
+- To recover this value using unstructuring
+  - `const { date } = req.query;`
+- Now that we have the date we want to search, we must import some functions from `date-fns` and `sequelize`.
+  - `import { startOfDay, endOfDay, parseISO } from 'date-fns'`
+  - `import { Op } from 'sequelize'`
+- First of all we need to format the date
+- Then lets search into Appointment model:
+```js
+const parsedDate = parseISO(date)
+
+const appointments = await Appointments.findAll({ where: {
+  provider_id: req.userId,
+  canceled_at: null,
+  date: {
+    [Op.between]: [
+      startOfDay(parsedDate),
+      endOfDay(parsedDate)
+    ],
+  },
+  order: ['date'],
+  }
+});
+
+return res.json(appointments)
+```
+>The `Op.between` is passed through brackets because is the name of the key, and receive statements for comparison inside an array.
+___
