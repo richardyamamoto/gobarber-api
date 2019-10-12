@@ -1185,3 +1185,43 @@ await Notification.create({
 Now when the notification is created, we send to Mongo the data of the appointment for the provider.
 ___
 
+## Listing User Notifications
+
+- We will start creating a new route and a new Controller
+- Create at `src/app/controllers/`[NotificationController.js](src/app/controllers/NotificationController.js)
+- Import the Notifications from schema
+  - `import Notifications from '../schemas/Notifications'`
+- We need to verify is the user is a provider
+  - `import User from '../models/User'`
+- Then after user verification, we need to list the notifications
+  - Schemas works a little bit different than Sequelize Models, the method to find all is `find()` and it waits as parameter directly the filter object.
+  - And to put another filters, we use chaining
+    - Concatenate the functions
+```js
+async update(req, res) {
+  const isProvider = await User.findOne({
+    where: {
+      id: req.userId,
+      provider: true,
+  }});
+
+  if(!isProvider) {
+    return res.status(401).json({ error: 'Only allowed to providers' })
+  }
+
+  const notification = await Notification.find(
+    user: user.reqId,
+  )
+  .sort({
+    createdAt: 'desc',
+  })
+  .limit(20);
+}
+
+return res.json(notification);
+```
+- At `routes.js`
+- Create
+`routes.get('/notifications', NotificationController.index)`
+___
+
