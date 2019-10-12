@@ -1,4 +1,4 @@
-import Notifications from '../schemas/Notification';
+import Notification from '../schemas/Notification';
 import User from '../models/User';
 
 class NotificationController {
@@ -14,7 +14,7 @@ class NotificationController {
       return res.status(401).json({ error: 'Only providers are allowed' });
     }
 
-    const notification = await Notifications.find({
+    const notification = await Notification.find({
       user: req.userId,
     })
       .sort({
@@ -22,6 +22,15 @@ class NotificationController {
       })
       .limit(20);
 
+    return res.json(notification);
+  }
+
+  async update(req, res) {
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { read: true },
+      { new: true }
+    );
     return res.json(notification);
   }
 }

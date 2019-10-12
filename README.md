@@ -1189,8 +1189,8 @@ ___
 
 - We will start creating a new route and a new Controller
 - Create at `src/app/controllers/`[NotificationController.js](src/app/controllers/NotificationController.js)
-- Import the Notifications from schema
-  - `import Notifications from '../schemas/Notifications'`
+- Import the Notification from schema
+  - `import Notification from '../schemas/Notification'`
 - We need to verify is the user is a provider
   - `import User from '../models/User'`
 - Then after user verification, we need to list the notifications
@@ -1225,3 +1225,24 @@ return res.json(notification);
 `routes.get('/notifications', NotificationController.index)`
 ___
 
+## Marking Notification as Read
+
+- Create a new route
+`routes.update('/notifications/:id', NotificationController.update)`
+- Now on [NotificationController.js](src/app/controllers/NotificationController.js)
+- Create a put method
+```js
+async update(req, res){
+  const notification = await Notification.findByIdAndUpdate(
+    req.params.id,
+    { read: true },
+    { new: true },
+  )
+};
+return res.json(notification);
+```
+>`findByIdAndUpdate()`
+>- 1st parameter: ID
+>- 2nd parameter: Which attribute to change
+>- 3rd parameter: Options, in our case the `new` will return the changes so we can list this notification again.
+___
