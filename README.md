@@ -1378,3 +1378,80 @@ await Mail.sendMail({
 ```
 - Check on Mailtrap, an email should be there.
 ___
+
+## Setting Email Template
+
+We are going to use as template engine the [Handlebars](https://handlebarsjs.com/installation.html).
+
+- Install `yarn express-handlebars nodemailer-express-handlebars`
+- On [mail.js](src/lib/mail.js)
+- Import
+  - `import exphbs from 'express-handlebars'`
+  - `import nodemailerhbs from 'nodemailer-express-handlebars'`
+  - `import { resolve } from 'path'`
+- Now create the method `configTemplate() {}`
+  - And call it on `constructor`
+- Create the structure
+- `src`
+  - `app`
+    - `views`
+      - `emails`
+        - `layouts`
+        - `partials`
+- Inside `src/app/views/emails/`create [cancellation.hbs](src/app/views/emails/cancellation.hbs)
+- Now on [mails.js](src/lib/mail.js) let's configure the template engine.
+- The method `configTemplate` will use the `transporter` that use the `compile` as first parameter and `nodemailerhbs` as second.
+- `nodemailerhbs` receives an object with the property `viewEngine`
+  - `viewEngine` receives the `exphbs` with method `create({})`
+    - `exphbs.create({})` creates this properties as 1st parameter:
+      - `layoutsDir`
+      - `partialsDir`
+      - `defaultLayout`
+      - `extname`
+    - And waits as 2nd parameter another object with:
+      - `viewPath`
+      - `extName`
+```js
+configTemplate() {
+
+  const viewPath = resolve(__dirname, '..', 'app','views','emails')
+
+  this.transporter.use('compile', nodemailerhbs({
+    viewEngine: exphbs.create({
+      layoutsDir: resolve(viewPath, 'layouts'),
+      partialsDir: resolve(viewPath, 'partials'),
+      defaultLayout: 'default',
+      extname: '.hbs'
+    },{
+      viewPath,
+      extName: '.hbs'
+    })
+  }))
+}
+```
+- Now let's stylize the templates.
+- On [default.hbs](src/app/views/emails/layouts/default.hbs)
+- Create a `div` to encapsulate the body of the email and the partials
+  - Body is called by `{{{ body }}}`
+  - Partials `{{> footer}}`
+- Create the [footer.hbs](src/app/views/emails/partials/footer.hbs)
+- On [cancellation.hbs](src/app/views/emails/cancellation.hbs)
+  - We need to pass some variables with provider, user and appointment data by using this syntax `{{providerName}}`
+- Now on [AppointmentController.js](src/app/controllers/AppointmentController.js)
+- On `Mail.sendMail()` we will change the `text` to `template` and create `context` to receive our variables.
+  - Recover the user data by including the model User...
+```js
+await Mail.sendMail({
+      to: `${appointment.provider.name} <${appointment.provider.email}>`,
+      subject: 'Agendamento cancelado',
+      template: 'cancellation',
+      context: {
+        providerName: appointment.provider.name,
+        userName: appointment.user.name,
+        date: format(date, "'dia 'dd' de 'MMMM', às 'HH:mm", {
+          locale: pt,
+        }),
+      },
+    });
+```
+___
