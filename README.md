@@ -1295,3 +1295,86 @@ async delete(req, res) {
 >- 1st Parameter: The date
 >- 2nd Parameter: Amount to subtract
 ___
+
+## Setting Nodemailer
+
+Nodemailer is a module for Node.js applications to allow easy as cake email sending.
+
+To install run `yarn add nodemailer`
+
+- We need to create a config file at `src/config/`[mail.js](src/config/mail.js)
+- It will be an export default object with some attributes:
+```js
+export default {
+  host: '',
+  port: '',
+  secure: false,
+  auth: {
+    user: '',
+    pass: '',
+  },
+  default: {
+    from:'Equipe GoBarber <noreply@gobarber.com>',
+  }
+};
+```
+>There are some **smtp** mail services as _Amazon SES, Mailgun, Sparkpost, Mandril(Mailchimp)_
+
+We are going to use [Mailtrap](https://mailtrap.io/) but it only works for **development environment**.
+
+- So to configure other things of the application, we'll create a folder specific to it
+- At `src` create the folder `lib`
+- Then create the [mail.js](src/lib/mail.js)
+- Import Nodemailer and mail config
+  - `import nodemailer from 'nodemailer'`
+  - `import mailConfig from '../config/mail'`
+- Create a class `Mail {}` with a `constructor`
+- Unstructure the `mailConfig` receiving `host`, `port`, `secure`, `auth` (inside constructor)
+- Inside constructor create a attribute to receive the transporter
+- Then create the method `sendMail() {}` with the message as parameter.
+```js
+class Mail {
+  constructor() {
+    const { host, port, secure, auth } = authConfig;
+    this.transporter = nodemailer.transporter({
+      host,
+      port,
+      secure,
+      auth: auth.user ? auth : null
+    })
+  }
+
+  sendMail(message) {
+    return this.transporter.sendMail({
+      ...configMail.default,
+      ...message,
+    })
+  }
+}
+export default new Mail();
+```
+- Now on [AppointmentController.js](src/app/controllers/AppointmentController.js)
+- Import the Mail
+  - `import Mail from '../../lib/mail'`
+- We will reuse the `const appointment = await Appointment.findByPk(id)` to include some provider data.
+```js
+const appointments = await Appointment.findByPk(id, {
+  include: [
+    {
+      model: User,
+      as: 'provider',
+      attributes: ['name', 'email'],
+    }
+  ]
+})
+```
+- Right after the appointment cancelation
+```js
+await Mail.sendMail({
+  to: `${appointment.provider.name} <${appointment.provider.email}>`,
+  subject: `Cancelamento de agendamento`,
+  text: `Voçê tem um novo cancelamento`
+})
+```
+- Check on Mailtrap, an email should be there.
+___
