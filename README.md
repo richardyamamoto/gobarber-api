@@ -1560,9 +1560,32 @@ await Queue.add(CancellationMail.key,{
 ```
 >The 2nd parameter is the data we want to pass to our job.
 
-- To finish we create at `src` [queue.js](src/queue.js)
+- To finish we create at `src/` [queue.js](src/queue.js)
 - At the [package.json](package.json) create another script to run the detached node
   - `"queue": "nodemon src/queue.js"`
 
 >The reason of creating this file, is because we are not going to excecute the application at the same node as the queue. The queue will run detached to never influence the application performance.
 ___
+
+## Monitoring Fails from Queue
+
+Bee queue has listeners that execute some function or method if the event happens. We will use the event `failed`
+
+- On [Queue.js](src/lib/Queue.js)
+- Modify the method `processQueue()`
+- And create `handleFailure()`
+```js
+processQueue() {
+    jobs.forEach(job => {
+      const { bee, handle } = this.queues[job.key];
+
+      bee.on('failed', this.handleFailure).process(handle);
+    });
+  }
+
+handleFailure(job, err) {
+  console.log(`Queue: ${job.queue.name}: FAILED: ${err}`);
+}
+```
+___
+
