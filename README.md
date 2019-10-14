@@ -1612,3 +1612,29 @@ routes.get('/providers/:providerId/available', AvailableController.index);
 - For further details [AvailableController.js](src/app/controllers/AvailableController.js)
 ___
 
+## Appointment Virtual Fields
+
+To improve the visualization for the front end, we will add some virtual fields at the Appointment model
+- At [Appointment.js](src/app/models/Appointment.js)
+- Insert the field `past` and `cancelable`
+- Import:
+  - `import { isBefore, subHours } from 'date-fns'`
+- Then make this changes:
+```js
+past: {
+  type: Sequelize.VIRTUAL,
+  get() {
+    return isBefore(this.date, new Date())
+  },
+},
+cancelable: {
+  type: Sequelize.VIRTUAL,
+  get() {
+    return isBefore(new Date(), subHour(this.date, 2))
+  },
+}
+```
+- On [AppointmentController.js](src/app/controllers/AppointmentController.js), put the new attributes at the array of attributes.
+
+Making this changes, when listing the appointments, will be there if the appointment already passed and if it is cancelable.
+___
