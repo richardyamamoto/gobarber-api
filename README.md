@@ -1302,7 +1302,7 @@ Nodemailer is a module for Node.js applications to allow easy as cake email send
 
 To install run `yarn add nodemailer`
 
-- We need to create a config file at `src/config/`[mail.js](src/config/mail.js)
+- We need to create a config file at `src/config/`[Mail.js](src/config/Mail.js)
 - It will be an export default object with some attributes:
 ```js
 export default {
@@ -1324,7 +1324,7 @@ We are going to use [Mailtrap](https://mailtrap.io/) but it only works for **dev
 
 - So to configure other things of the application, we'll create a folder specific to it
 - At `src` create the folder `lib`
-- Then create the [mail.js](src/lib/mail.js)
+- Then create the [Mail.js](src/lib/Mail.js)
 - Import Nodemailer and mail config
   - `import nodemailer from 'nodemailer'`
   - `import mailConfig from '../config/mail'`
@@ -1384,7 +1384,7 @@ ___
 We are going to use as template engine the [Handlebars](https://handlebarsjs.com/installation.html).
 
 - Install `yarn express-handlebars nodemailer-express-handlebars`
-- On [mail.js](src/lib/mail.js)
+- On [Mail.js](src/lib/Mail.js)
 - Import
   - `import exphbs from 'express-handlebars'`
   - `import nodemailerhbs from 'nodemailer-express-handlebars'`
@@ -1399,7 +1399,7 @@ We are going to use as template engine the [Handlebars](https://handlebarsjs.com
         - `layouts`
         - `partials`
 - Inside `src/app/views/emails/`create [cancellation.hbs](src/app/views/emails/cancellation.hbs)
-- Now on [mails.js](src/lib/mail.js) let's configure the template engine.
+- Now on [Mails.js](src/lib/Mail.js) let's configure the template engine.
 - The method `configTemplate` will use the `transporter` that use the `compile` as first parameter and `nodemailerhbs` as second.
 - `nodemailerhbs` receives an object with the property `viewEngine`
   - `viewEngine` receives the `exphbs` with method `create({})`
@@ -1454,4 +1454,115 @@ await Mail.sendMail({
       },
     });
 ```
+___
+
+## Configuring Queue with Redis
+
+There are many ways to send this email faster, one of this ways is pulling out the `await` from the method `Mail.sendMail()`. It will work, but we lose control if happens any exception.
+
+The "right" way is using background jobs or queues
+
+We are going to use the Redis that is a database key/value that is extremely performatic.
+
+To start [Docker-Redis](https://hub.docker.com/_/redis)
+```bash
+docker run --name redisbarber -p 6379:6379 -d -t redis:alpine
+```
+> - -d: Run on detached mode;
+> - redis:alpine: Come with only the essential features.
+
+- To certify that the Redis is running.
+```bash
+docker logs <image_id>
+```
+
+- We will use the [Bee queue](https://github.com/bee-queue/bee-queue) to handle jobs.
+
+```bash
+yarn add bee-queue
+```
+- Create `src/lib/`[Queue.js](src/lib/Queue.js)
+- Create `class Queue`
+- Import:
+  - `import Bee from 'bee-queue'`
+- Create [CancellationMail.js](src/app/jobs/CancellationMail.js)
+- At `CancelaltionMail.js` import:
+  - `import { format, parseISO } from 'date-fns'`
+  - `import { pt } from 'date-fns/locale/pt'`
+  - `import Mail from '../../lib/Mail'`
+- Create:
+```js
+get key() {
+  return 'CancellationMail';
+}
+```
+>It is an easy way to recover any attribute value
+
+- And create too:
+```js
+async handle({data}){
+  ...
+}
+```
+- Cut the `await Mail.sendMail({...})` from [AppointmentController.js](src/app/controllers/AppointmentController.js) and paste into the `async handle()` method.
+- Unstructure the data to extract appointment.
+- Now at [Queue.js](src/lib/Queue.js)
+  - `import CancellationMail from '../app/jobs/CancellationMail'`
+- At `src/config` create [redis.js](src/config/redis.js)
+  - Redis configuration file.
+- Back to [Queue.js](src/lib/Queue.js)
+- Import:
+  - `import redisConfig from '../config/redis'`
+- Create an array receiving all the Jobs
+- Inside the `constructor` create the attribute `queues` as an empty object.
+- Create the `init() {}` and inside we will go through the Jobs array and for each job we will create a connection with Redis using the Bee queue.
+```js
+init() {
+  jobs.forEach(({ key, handle }) => {
+    this.queue[key]: {
+      bee: new Bee(key, {
+        redis: redisConfig,
+      }),
+      handle,
+    };
+  });
+}
+```
+>Using unstructuring we can get methods and attributes from each element from the jobs array.
+
+- Now we create the method to add the job into the queues object.
+```js
+add(queue, job) {
+  return this.queues[queue].bee.createJob(job).save();
+}
+```
+- To process the queue we create another method.
+```js
+processQueue() {
+  jobs.forEach(job => {
+    const { bee, handle } = this.queues[job.key];
+
+    bee.process(handle);
+  })
+}
+```
+- Now on [AppointmentController.js](src/app/controllers/AppointmentController.js)
+- Replace the importation of Mail to Queue.
+  - `import Queue from '../../lib/Queue'`
+- And import the cancellation job.
+  - `import CancellationMail from '../jobs/CancellationMail.js'`
+- Right after `await appointment.save()`.
+- Create:
+```js
+await Queue.add(CancellationMail.key,{
+  appointment,
+})
+```
+>The 2nd parameter is the data we want to pass to our job.
+
+- To finish we create at `src` [queue.js](src/queue.js)
+- At the [package.json](package.json) create another script to run the detached node
+  - `"queue": "nodemon src/queue.js"`
+
+>The reason of creating this file, is because we are not going to excecute the application at the same node as the queue. The queue will run detached to never influence the application performance.
 ___
