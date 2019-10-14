@@ -224,7 +224,7 @@ Each migration file content instructions for creation, alterations or removal of
 
 Each migration happens by date. If we create a migration now, it can not depend of a unexistent migration.
 
-Migration exemple
+Migration example
 
 ```js
 module.exports = {
@@ -487,7 +487,7 @@ To generate the hash we are going to use the Bcrypt
 - Below the closure of `super.init()`
 - Create `this.addHook()`
   - `addHook()` is a functionality of Sequelize which is basically code snippets that are executed automatically based on actions that happens on the Model.
-    - Exemple: `addHook('beforeSave', () => {})` - will execute the function (second parameter) before data been saved on database.
+    - example: `addHook('beforeSave', () => {})` - will execute the function (second parameter) before data been saved on database.
       - The function waits for the created model as parameter
 - Ok, now the user will fill the password field and the hook will generate the hash.
 - Bcrypt has a method `hash(<attribute>, <cryptography_strengh:integer>)`
@@ -509,10 +509,10 @@ We are going to use JWT to generate session tokens and provide permission to use
 The Token is separated in 3 parts
 
 1. <span style="color: orange">Header</span> - Contents which kind of token we generate.
-2. <span style="color: red">Payload</span> - It carries some extra informations that could be useful for backend or frontend (non-sensitive data) _Exemple: id_
+2. <span style="color: red">Payload</span> - It carries some extra informations that could be useful for backend or frontend (non-sensitive data) _example: id_
 3. <span style="color: cyan">Signature</span> - The prove that token was not modified.
 
-Token exemple:
+Token example:
 <span style="color: orange">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span >.<span style="color: red">eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ</span>.<span style="color: cyan">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
 ___
 
@@ -1027,7 +1027,7 @@ ___
 
 We have the parameter query that is passed on the URL
 
-Exemple: `http://localhost:3333/appointments?page=1`
+example: `http://localhost:3333/appointments?page=1`
 
 This query can be recovered from `req.query`
 
@@ -1073,7 +1073,7 @@ if (!isProvider) {
 }
 ```
 - After this verification we will pass the date of the search by query parameters
-  - Exemple: `http://localhost:3333/schedule?date=2019-10-12T00:00:00-03:00`
+  - example: `http://localhost:3333/schedule?date=2019-10-12T00:00:00-03:00`
 - To recover this value using unstructuring
   - `const { date } = req.query;`
 - Now that we have the date we want to search, we must import some functions from `date-fns` and `sequelize`.
@@ -1686,4 +1686,14 @@ exceptionHandler() {
   }
 
 ```
+___
 
+## Environment Variables
+
+Install `yarn add dotenv`
+- Create [.env](.env)
+- Import at [app.js](src/app.js), [queue.js](src/queue.js) and [database.js](src/config/database.js) as first importation.
+  - `import 'dotenv/config'`
+  - `require('dotenv/config')`
+- Create a `.env.example` just with the fields withou data.
+___
