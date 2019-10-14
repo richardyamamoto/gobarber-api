@@ -1638,3 +1638,52 @@ cancelable: {
 
 Making this changes, when listing the appointments, will be there if the appointment already passed and if it is cancelable.
 ___
+
+## Treating Exceptions
+
+We will use Sentry, so first creat an account, then create a new project.
+
+Install the integration by running
+```bash
+yarn add @sentry/node@5.7.0
+```
+- At [app.js](src/app.js)
+- Import
+  - `import * as Sentry from '@sentry/node'`
+- Create a config for Sentry
+  - At `src/config/`[sentry.js](src/config/sentry.js)
+- Back to `app.js`
+- Import the Sentry config
+  - `import sentryConfig from './config/sentry'`
+- After `this.server = express()`
+- Put `Sentry.init(sentryConfig)`
+- Then inside `middlewares()` put
+
+Express can not catch async errors, to solve this install
+```bash
+yarn add express-async-errors
+```
+Just import this new extensions after express importation and before routes at `app.js`
+  - `import 'express-async-errors'`
+
+Now inside the contructor call and create a new method `this.handlerException()`
+
+This method will receive four parameters, and to treat this install another extension called Youch
+```bash
+yarn add youch
+```
+Import
+  - `import Youch from 'youch'`
+
+Then inside `handlerException()`
+```js
+exceptionHandler() {
+    this.server.use(async (err, req, res, next) => {
+      const errors = await new Youch(err, req).toJSON();
+
+      return res.status(500).json(errors);
+    });
+  }
+
+```
+
