@@ -1697,3 +1697,113 @@ Install `yarn add dotenv`
   - `require('dotenv/config')`
 - Create a `.env.example` just with the fields withou data.
 ___
+
+## Cors
+
+Install a new module called Cors, it let us allow other applications to access our api.
+```bash
+yarn add cors
+```
+At [app.js](src/app.js)
+
+Import cors
+
+`import cors from 'cors'`
+
+Put the new middleware
+```js
+this.server.use(cors())
+```
+
+before:
+
+```js
+this.server.use(express.json())
+```
+
+On Production ambience, it is common to put the origin:
+```js
+this.server.use(cors({origin: 'https://origin_adress.com'}))
+```
+But we are at development ambience, so it is not necessary.
+___
+
+## Little Modifications.
+
+At [SessionController.js](src/app/controllers/SessionController.js)
+
+Import the File model
+```js
+import File from '../models/File'
+```
+Then include the new model inside the user search by email. And get the `id`, `path`, `url` of file.
+```js
+const user = await User.findOne({
+      where: {
+        email,
+      },
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
+```
+And return this at the
+```js
+return res.json({
+    user: { id, name, email, avatar, provider },
+    token: jwt.sign({ id }, authConfig.secret, {
+      expiresIn: authConfig.expiresIn,
+    }),
+  });
+}
+```
+At [UserController.js](src/app/controllers/UserController.js)
+
+On `async update()`:
+```js
+await user.update(req.body);
+
+  const { id, name, avatar } = User.findByPk(req.userId, {
+    include: [
+      {
+        model: File,
+        as: 'avatar',
+        attributes: ['id', 'path', 'url'],
+      },
+    ],
+  });
+
+  return res.json({
+    id,
+    name,
+    email,
+    avatar,
+    });
+```
+At [ScheduleController.js](src/app/controllers/ScheduleController.js)
+
+Include the User model inside the appointment query.
+
+```js
+const appointment = await Appointment.findAll({
+  where: {
+    provider_id: req.userId,
+    canceled_at: null,
+    date: {
+      [Op.between]: [startOfDay(parsedDate), endOfDay(parsedDate)],
+    },
+  },
+  include: [
+    {
+      model: User,
+      as: 'user',
+      attriutes: ['name'],
+    },
+  ],
+  order: ['date'],
+});
+```
