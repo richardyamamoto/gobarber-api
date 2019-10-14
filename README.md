@@ -1589,3 +1589,26 @@ handleFailure(job, err) {
 ```
 ___
 
+## Listing Available Dates
+
+We need to verify if the schedule has not passed. Discount the schedule that are not available.
+
+- First create a new route and controller
+- Create [AvailableController.js](src/app/controllers/AvailableController.js)
+- Create the class `AvailableController {}`
+- At [routes.js](src/routes.js)
+- Import the `AvailableController.js` and create a new `get` route
+```js
+routes.get('/providers/:providerId/available', AvailableController.index);
+```
+- The front end will send the date by Query parameters.
+- Recover the date from `req.query`
+- Verify if date exists
+- Then transform the date into a number.
+- Create a const to receive the appointment search and use the `Op` from `Sequelize` to verify if the date passed is between the start of day and end of day.
+- Create an array with a sequencie of time.
+- Then create another constant to map the array and set to the time stamp pattern.
+- Then return an object with properties: time, value and available.
+- For further details [AvailableController.js](src/app/controllers/AvailableController.js)
+___
+
